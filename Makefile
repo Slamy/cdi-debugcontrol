@@ -5,14 +5,19 @@ BUILD   = build
 SRC     = src
 
 #COMPILER AND LIBRARY LOCATIONS
-OS9C    = C:\CDI\OS9C
-CLIB    = $(OS9C)\lib
-MTOOLS  = C:\CDI\MASTER
-PATH    = $(OS9C)\bin;$(MTOOLS);%PATH%
-
+CDISDK = D:
+OS9C   = $(CDISDK)/DOS/BIN
+OS68K  = $(CDISDK)/OS9/68000
+OS9CDI = $(CDISDK)/OS9/CDI
+XCLIB  = $(OS68K)/lib
+XCDEF  = $(OS68K)/defs
+CLIB   = $(OS9CDI)/lib
+CDEF   = $(OS9CDI)/defs
+PATH   = $(OS9C);%PATH%
+DOSBOX = C:/Software/DOSBox-0.74-3/DOSBox.exe
 #COMPILER CONFIGURATION
 CC      = xcc
-CCFLAGS = -S -R=$(OUTPUT) -T=$(OUTPUT) -TO=osk -TP=68kI -l
+CCFLAGS = -eas=$(OUTPUT) -tp=68K,sc -v=$(CDEF) -bc -r
 ASFLAGS = -O=0 -S -R=$(OUTPUT) -T=$(OUTPUT) -TO=osk -TP=68kI
 LD      = l68
 MASTER  = vcdmastr.exe
@@ -26,17 +31,17 @@ LDPARAM = -a $(CLIB)\cstart.r $(FILES) -l=$(CLIB)\cdi.l -l=$(CLIB)\cdisys.l -l=$
 cd: link
 	$(MASTER) build.cd
 
+all: link
+
 rebuild: clean cd
 
-cdi_link: $(FILES)
-	crt_link -n=play $(LDPARAM) -o=$(BUILD)\$(NAME).app
-	$(LD) -z=link.txt
-	fixmod -ua=80ff $(BUILD)\$(NAME).app
+link_app: $(FILES)
+	$(LD) -z=link.txt -o=build\$(NAME).app -n=play
+	fixmod -ua=80ff $(BUILD)/$(NAME).app
 
-link: $(FILES)
-	crt_link -n=cdi_$(NAME) -o=$(BUILD)\$(NAME) $(LDPARAM)
-	$(LD) -z=link.txt
-	fixmod -uo=0.0 $(BUILD)\$(NAME)
+link_cd: $(FILES)
+	$(LD) -z=link.txt -o=build\$(NAME)
+	fixmod -uo=0.0 $(BUILD)/$(NAME)
 
 $(OUTPUT)\graphics.r : $(SRC)\graphics.c
 	$(CC) $(CCFLAGS) -O=2 $(SRC)\graphics.c
